@@ -19,7 +19,8 @@ package org.springframework.core.io;
 import org.springframework.lang.Nullable;
 
 /**
- * A resolution strategy for protocol-specific resource handles.
+ * 使用指定的resourceLoader来解析指定的 location
+ * 若成功，则返回对应的 Resource
  *
  * <p>Used as an SPI for {@link DefaultResourceLoader}, allowing for
  * custom protocols to be handled without subclassing the loader
@@ -27,6 +28,8 @@ import org.springframework.lang.Nullable;
  *
  * @author Juergen Hoeller
  * @since 4.3
+ *
+ * 使用addProtocolResolver将ProtocolResolver加入到Spring中
  * @see DefaultResourceLoader#addProtocolResolver
  */
 @FunctionalInterface

@@ -143,17 +143,18 @@ public class DefaultResourceLoader implements ResourceLoader {
 	@Override
 	public Resource getResource(String location) {
 		Assert.notNull(location, "Location must not be null");
-
+		// 通过ProtocolResolver来加载资源
 		for (ProtocolResolver protocolResolver : this.protocolResolvers) {
 			Resource resource = protocolResolver.resolve(location, this);
 			if (resource != null) {
 				return resource;
 			}
 		}
-
+		// 若路径以"/"开头，返回ClassPathContextResource资源
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
 		}
+		// 若路径以"classpath:"开头，则返回ClassPathResource资源
 		else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
 		}
@@ -161,10 +162,12 @@ public class DefaultResourceLoader implements ResourceLoader {
 			try {
 				// Try to parse the location as a URL...
 				URL url = new URL(location);
+				// 根据文件是否为URL，是则返回FileUrlResource资源，否则返回UrlResource资源
 				return (ResourceUtils.isFileURL(url) ? new FileUrlResource(url) : new UrlResource(url));
 			}
 			catch (MalformedURLException ex) {
 				// No URL -> resolve as resource path.
+				// 返回ClassPathContextResource资源
 				return getResourceByPath(location);
 			}
 		}

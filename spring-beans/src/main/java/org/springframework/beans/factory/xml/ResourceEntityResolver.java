@@ -73,8 +73,11 @@ public class ResourceEntityResolver extends DelegatingEntityResolver {
 	@Override
 	@Nullable
 	public InputSource resolveEntity(String publicId, @Nullable String systemId) throws SAXException, IOException {
+		// 调用父类的方法，进行解析
 		InputSource source = super.resolveEntity(publicId, systemId);
+		// 解析失败，使用resourceLoader开始解析
 		if (source == null && systemId != null) {
+			// 获取resourcePath，即Resource的路径
 			String resourcePath = null;
 			try {
 				String decodedSystemId = URLDecoder.decode(systemId, "UTF-8");
@@ -97,7 +100,9 @@ public class ResourceEntityResolver extends DelegatingEntityResolver {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Trying to locate XML entity [" + systemId + "] as resource [" + resourcePath + "]");
 				}
+				// 获取Resource
 				Resource resource = this.resourceLoader.getResource(resourcePath);
+				// 获取InputResource
 				source = new InputSource(resource.getInputStream());
 				source.setPublicId(publicId);
 				source.setSystemId(systemId);

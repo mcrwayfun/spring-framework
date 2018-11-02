@@ -106,7 +106,7 @@ public class XmlValidationModeDetector {
 					isDtdValidated = true;
 					break;
 				}
-				// hasOpeningTag 方法会校验，如果这一行有 < ，并且 < 后面跟着的是字母，则返回 true
+				// hasOpeningTag 方法会校验，如果这一行有 < ，并且 < 后面跟着的是字母，则停止遍历，模式一定为XSD
 				if (hasOpeningTag(content)) {
 					// End of meaningful data...
 					break;

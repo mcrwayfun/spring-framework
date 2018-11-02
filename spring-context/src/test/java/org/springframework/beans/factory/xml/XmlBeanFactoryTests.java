@@ -118,6 +118,8 @@ public class XmlBeanFactoryTests {
 	private static final ClassPathResource REFTYPES_CONTEXT = classPathResource("-reftypes.xml");
 	private static final ClassPathResource DEFAULT_LAZY_CONTEXT = classPathResource("-defaultLazyInit.xml");
 	private static final ClassPathResource DEFAULT_AUTOWIRE_CONTEXT = classPathResource("-defaultAutowire.xml");
+	private static final ClassPathResource DTD_CONTEXT = classPathResource("-localDtd.xml");
+
 
 	private static ClassPathResource classPathResource(String suffix) {
 		return new ClassPathResource(CLASSNAME + suffix, CLASS);
@@ -128,6 +130,13 @@ public class XmlBeanFactoryTests {
 	public void testCollectionsReferredToAsRefLocals() throws Exception {
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		new XmlBeanDefinitionReader(factory).loadBeanDefinitions(COLLECTIONS_XSD_CONTEXT);
+		factory.preInstantiateSingletons();
+	}
+
+	@Test
+	public void testDtd() throws Exception {
+		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+		new XmlBeanDefinitionReader(factory).loadBeanDefinitions(DTD_CONTEXT);
 		factory.preInstantiateSingletons();
 	}
 

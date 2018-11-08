@@ -412,16 +412,19 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
+		// 解析id
 		String id = ele.getAttribute(ID_ATTRIBUTE);
+		// 解析name属性
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
-
+		// 分割name属性，获得别名
 		List<String> aliases = new ArrayList<>();
 		if (StringUtils.hasLength(nameAttr)) {
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 			aliases.addAll(Arrays.asList(nameArr));
 		}
-
+		// 优先使用id
 		String beanName = id;
+		// id为空或不存在则使用aliases的第一个
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
 			beanName = aliases.remove(0);
 			if (logger.isTraceEnabled()) {
@@ -430,6 +433,7 @@ public class BeanDefinitionParserDelegate {
 			}
 		}
 
+		// 校验beanName的唯一性
 		if (containingBean == null) {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
@@ -438,6 +442,8 @@ public class BeanDefinitionParserDelegate {
 		if (beanDefinition != null) {
 			if (!StringUtils.hasText(beanName)) {
 				try {
+					// 如果不存在beanName那么根据Spring提供的命名规范为当前bean生成对应的beanName
+					// 根据类名自动生成相对应的beanName
 					if (containingBean != null) {
 						beanName = BeanDefinitionReaderUtils.generateBeanName(
 								beanDefinition, this.readerContext.getRegistry(), true);
@@ -477,17 +483,18 @@ public class BeanDefinitionParserDelegate {
 	 */
 	protected void checkNameUniqueness(String beanName, List<String> aliases, Element beanElement) {
 		String foundName = null;
-
+		// 查询beanName是否已经使用
 		if (StringUtils.hasText(beanName) && this.usedNames.contains(beanName)) {
 			foundName = beanName;
 		}
 		if (foundName == null) {
 			foundName = CollectionUtils.findFirstMatch(this.usedNames, aliases);
 		}
+		// 若存在则报错
 		if (foundName != null) {
 			error("Bean name '" + foundName + "' is already used in this <beans> element", beanElement);
 		}
-
+		// 添加到usedNames集合中
 		this.usedNames.add(beanName);
 		this.usedNames.addAll(aliases);
 	}

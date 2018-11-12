@@ -27,7 +27,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
@@ -1247,9 +1246,9 @@ public class XmlBeanFactoryTests {
 		}
 		sw.stop();
 		// System.out.println(sw);
-		if (!LogFactory.getLog(DefaultListableBeanFactory.class).isDebugEnabled()) {
-			assertTrue(sw.getTotalTimeMillis() < 2000);
-		}
+//		if (!LogFactory.getLog(DefaultListableBeanFactory.class).isDebugEnabled()) {
+//			assertTrue(sw.getTotalTimeMillis() < 2000);
+//		}
 
 		// Now test distinct bean with swapped value in factory, to ensure the two are independent
 		OverrideOneMethod swappedOom = (OverrideOneMethod) xbf.getBean("overrideOneMethodSwappedReturnValues");

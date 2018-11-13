@@ -536,6 +536,7 @@ public class BeanDefinitionParserDelegate {
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 			// 解析构造函数参数
 			parseConstructorArgElements(ele, bd);
+			// 解析property元素
 			parsePropertyElements(ele, bd);
 			// 解析qualifier子元素
 			parseQualifierElements(ele, bd);
@@ -817,6 +818,7 @@ public class BeanDefinitionParserDelegate {
 				else {
 					try {
 						this.parseState.push(new ConstructorArgumentEntry(index));
+						// 解析ele对应的属性
 						Object value = parsePropertyValue(ele, bd, null);
 						ConstructorArgumentValues.ValueHolder valueHolder = new ConstructorArgumentValues.ValueHolder(value);
 						if (StringUtils.hasLength(typeAttr)) {
@@ -826,6 +828,7 @@ public class BeanDefinitionParserDelegate {
 							valueHolder.setName(nameAttr);
 						}
 						valueHolder.setSource(extractSource(ele));
+						// 判断相同的index是否已经有参数了，不允许重复指定相同的参数
 						if (bd.getConstructorArgumentValues().hasIndexedArgumentValue(index)) {
 							error("Ambiguous constructor-arg entries for index " + index, ele);
 						}
@@ -842,6 +845,7 @@ public class BeanDefinitionParserDelegate {
 				error("Attribute 'index' of tag 'constructor-arg' must be an integer", ele);
 			}
 		}
+		// 没有index属性，则忽略该属性，自动寻找
 		else {
 			try {
 				this.parseState.push(new ConstructorArgumentEntry());
@@ -866,13 +870,16 @@ public class BeanDefinitionParserDelegate {
 	 * Parse a property element.
 	 */
 	public void parsePropertyElement(Element ele, BeanDefinition bd) {
+		// 湖区配置元素中name的值
 		String propertyName = ele.getAttribute(NAME_ATTRIBUTE);
+		// 不存在则直接返回
 		if (!StringUtils.hasLength(propertyName)) {
 			error("Tag 'property' must have a 'name' attribute", ele);
 			return;
 		}
 		this.parseState.push(new PropertyEntry(propertyName));
 		try {
+			// 不允许对同一个name进行多次配置
 			if (bd.getPropertyValues().contains(propertyName)) {
 				error("Multiple 'property' definitions for property '" + propertyName + "'", ele);
 				return;
@@ -881,6 +888,7 @@ public class BeanDefinitionParserDelegate {
 			PropertyValue pv = new PropertyValue(propertyName, val);
 			parseMetaElements(ele, pv);
 			pv.setSource(extractSource(ele));
+			// 记录在beanDefinition中的propertyValue中
 			bd.getPropertyValues().addPropertyValue(pv);
 		}
 		finally {
@@ -892,15 +900,19 @@ public class BeanDefinitionParserDelegate {
 	 * Parse a qualifier element.
 	 */
 	public void parseQualifierElement(Element ele, AbstractBeanDefinition bd) {
+		// 获取type属性
 		String typeName = ele.getAttribute(TYPE_ATTRIBUTE);
+		// 不存在则报错且返回
 		if (!StringUtils.hasLength(typeName)) {
 			error("Tag 'qualifier' must have a 'type' attribute", ele);
 			return;
 		}
 		this.parseState.push(new QualifierEntry(typeName));
 		try {
+			// 将装在到AutowireCandidateQualifier中
 			AutowireCandidateQualifier qualifier = new AutowireCandidateQualifier(typeName);
 			qualifier.setSource(extractSource(ele));
+			// 获取value属性
 			String value = ele.getAttribute(VALUE_ATTRIBUTE);
 			if (StringUtils.hasLength(value)) {
 				qualifier.setAttribute(AutowireCandidateQualifier.VALUE_KEY, value);
@@ -941,10 +953,12 @@ public class BeanDefinitionParserDelegate {
 				"<constructor-arg> element");
 
 		// Should only have one child element: ref, value, list, etc.
+		// 一个属性只能对应一种类型，ref、value、list等
 		NodeList nl = ele.getChildNodes();
 		Element subElement = null;
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+			// description和meta不处理
 			if (node instanceof Element && !nodeNameEquals(node, DESCRIPTION_ELEMENT) &&
 					!nodeNameEquals(node, META_ELEMENT)) {
 				// Child element is what we're looking for.
@@ -956,15 +970,22 @@ public class BeanDefinitionParserDelegate {
 				}
 			}
 		}
-
+		// 解析constructor-arg上的ref属性
 		boolean hasRefAttribute = ele.hasAttribute(REF_ATTRIBUTE);
+		// 解析constructor-arg上的value属性
 		boolean hasValueAttribute = ele.hasAttribute(VALUE_ATTRIBUTE);
+		/**
+		 * 在constructor-arg上不存在：
+		 * 1、同时既存在ref属性又有value二属性
+		 * 2、存在ref属性或者value属性且又有子元素
+		 */
 		if ((hasRefAttribute && hasValueAttribute) ||
 				((hasRefAttribute || hasValueAttribute) && subElement != null)) {
 			error(elementName +
 					" is only allowed to contain either 'ref' attribute OR 'value' attribute OR sub-element", ele);
 		}
 
+		// 使用RuntimeBeanReference来封装对应的ref名称
 		if (hasRefAttribute) {
 			String refName = ele.getAttribute(REF_ATTRIBUTE);
 			if (!StringUtils.hasText(refName)) {
@@ -974,16 +995,19 @@ public class BeanDefinitionParserDelegate {
 			ref.setSource(extractSource(ele));
 			return ref;
 		}
+		// 使用TypedStringValue来处理value属性
 		else if (hasValueAttribute) {
 			TypedStringValue valueHolder = new TypedStringValue(ele.getAttribute(VALUE_ATTRIBUTE));
 			valueHolder.setSource(extractSource(ele));
 			return valueHolder;
 		}
+		// 解析子元素
 		else if (subElement != null) {
 			return parsePropertySubElement(subElement, bd);
 		}
 		else {
 			// Neither child element nor "ref" or "value" attribute found.
+			// 既没有ref，也没有value，也没有子元素，报错
 			error(elementName + " must specify a ref or value", ele);
 			return null;
 		}
@@ -991,6 +1015,7 @@ public class BeanDefinitionParserDelegate {
 
 	@Nullable
 	public Object parsePropertySubElement(Element ele, @Nullable BeanDefinition bd) {
+		//  解析子元素
 		return parsePropertySubElement(ele, bd, null);
 	}
 
@@ -1003,6 +1028,7 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public Object parsePropertySubElement(Element ele, @Nullable BeanDefinition bd, @Nullable String defaultValueType) {
+		// 不符合命名空间，则执行自定义解析
 		if (!isDefaultNamespace(ele)) {
 			return parseNestedCustomElement(ele, bd);
 		}

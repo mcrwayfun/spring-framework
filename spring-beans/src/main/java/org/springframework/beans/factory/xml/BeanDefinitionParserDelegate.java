@@ -416,7 +416,12 @@ public class BeanDefinitionParserDelegate {
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		// 解析name属性
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
-		// 分割name属性，获得别名
+		/**
+		 * 分割name属性，获得别名
+		 * bean标签定义name可能会有多个，可以使用，或者；来进行分割，比如
+		 * <bean name="foo;foo1,foo2" class="org.springframework.tests.sample.beans.TestBean"/>
+		 * StringUtils.tokenizeToStringArray将nameAttr分割成一个数组
+		 */
 		List<String> aliases = new ArrayList<>();
 		if (StringUtils.hasLength(nameAttr)) {
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
@@ -424,7 +429,7 @@ public class BeanDefinitionParserDelegate {
 		}
 		// 优先使用id
 		String beanName = id;
-		// id为空或不存在则使用aliases的第一个
+		// id为空，则使用aliases的第一个
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
 			beanName = aliases.remove(0);
 			if (logger.isTraceEnabled()) {

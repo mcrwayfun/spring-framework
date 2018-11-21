@@ -5,9 +5,13 @@
 
 	<bean  class="org.springframework.tests.sample.beans.TestBean"/>
 
-
 	<bean id="foo" class="org.springframework.tests.sample.beans.TestBean"/>
 
-	<bean name="foo;foo1,foo2" class="org.springframework.tests.sample.beans.TestBean"/>
+	<bean name="foo1,foo2" class="org.springframework.tests.sample.beans.TestBean">
+		<meta key="keys" value="values"/>
+	</bean>
 
+	<bean name="fooMeta" class="org.springframework.tests.sample.beans.TestBean">
+		<meta key="keys" value="values"/>
+	</bean>
 </beans>

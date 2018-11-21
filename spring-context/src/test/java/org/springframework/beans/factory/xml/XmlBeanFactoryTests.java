@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.xml.sax.InputSource;
 
 import org.springframework.aop.framework.ProxyFactory;
@@ -1583,7 +1584,11 @@ public class XmlBeanFactoryTests {
 		DefaultListableBeanFactory xbf = new DefaultListableBeanFactory();
 		try {
 			new XmlBeanDefinitionReader(xbf).loadBeanDefinitions(TEST_WITH_DUP_NAMES_CONTEXT);
-			fail("Duplicate name not detected");
+			// fail("Duplicate name not detected");
+			TestBean bean = (TestBean)xbf.getBean("fooMeta");
+			BeanDefinition fooMeta = xbf.getBeanDefinition("fooMeta");
+			String value = (String)fooMeta.getAttribute("keys");
+			System.out.println(value);
 		}
 		catch (BeansException ex) {
 			assertTrue(ex.getMessage().contains("Bean name 'foo'"));

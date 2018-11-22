@@ -875,7 +875,7 @@ public class BeanDefinitionParserDelegate {
 	 * Parse a property element.
 	 */
 	public void parsePropertyElement(Element ele, BeanDefinition bd) {
-		// 湖区配置元素中name的值
+		// 获取配置元素中name的值
 		String propertyName = ele.getAttribute(NAME_ATTRIBUTE);
 		// 不存在则直接返回
 		if (!StringUtils.hasLength(propertyName)) {
@@ -922,12 +922,16 @@ public class BeanDefinitionParserDelegate {
 			if (StringUtils.hasLength(value)) {
 				qualifier.setAttribute(AutowireCandidateQualifier.VALUE_KEY, value);
 			}
+			// 遍历子节点
 			NodeList nl = ele.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node node = nl.item(i);
+				// attribute 标签
 				if (isCandidateElement(node) && nodeNameEquals(node, QUALIFIER_ATTRIBUTE_ELEMENT)) {
 					Element attributeEle = (Element) node;
+					// attribute 标签的 key 属性
 					String attributeName = attributeEle.getAttribute(KEY_ATTRIBUTE);
+					// attribute 标签的 value 属性
 					String attributeValue = attributeEle.getAttribute(VALUE_ATTRIBUTE);
 					if (StringUtils.hasLength(attributeName) && StringUtils.hasLength(attributeValue)) {
 						BeanMetadataAttribute attribute = new BeanMetadataAttribute(attributeName, attributeValue);
@@ -1037,6 +1041,7 @@ public class BeanDefinitionParserDelegate {
 		if (!isDefaultNamespace(ele)) {
 			return parseNestedCustomElement(ele, bd);
 		}
+		// bean标签
 		else if (nodeNameEquals(ele, BEAN_ELEMENT)) {
 			BeanDefinitionHolder nestedBd = parseBeanDefinitionElement(ele, bd);
 			if (nestedBd != null) {
@@ -1044,6 +1049,7 @@ public class BeanDefinitionParserDelegate {
 			}
 			return nestedBd;
 		}
+		// ref标签
 		else if (nodeNameEquals(ele, REF_ELEMENT)) {
 			// A generic reference to any name of any bean.
 			String refName = ele.getAttribute(BEAN_REF_ATTRIBUTE);
@@ -1065,12 +1071,15 @@ public class BeanDefinitionParserDelegate {
 			ref.setSource(extractSource(ele));
 			return ref;
 		}
+		// idref标签
 		else if (nodeNameEquals(ele, IDREF_ELEMENT)) {
 			return parseIdRefElement(ele);
 		}
+		// value标签
 		else if (nodeNameEquals(ele, VALUE_ELEMENT)) {
 			return parseValueElement(ele, defaultValueType);
 		}
+		// null标签
 		else if (nodeNameEquals(ele, NULL_ELEMENT)) {
 			// It's a distinguished null value. Let's wrap it in a TypedStringValue
 			// object in order to preserve the source location.
@@ -1078,18 +1087,23 @@ public class BeanDefinitionParserDelegate {
 			nullHolder.setSource(extractSource(ele));
 			return nullHolder;
 		}
+		// array标签
 		else if (nodeNameEquals(ele, ARRAY_ELEMENT)) {
 			return parseArrayElement(ele, bd);
 		}
+		// list标签
 		else if (nodeNameEquals(ele, LIST_ELEMENT)) {
 			return parseListElement(ele, bd);
 		}
+		// set标签
 		else if (nodeNameEquals(ele, SET_ELEMENT)) {
 			return parseSetElement(ele, bd);
 		}
+		// map标签
 		else if (nodeNameEquals(ele, MAP_ELEMENT)) {
 			return parseMapElement(ele, bd);
 		}
+		// props标签
 		else if (nodeNameEquals(ele, PROPS_ELEMENT)) {
 			return parsePropsElement(ele);
 		}

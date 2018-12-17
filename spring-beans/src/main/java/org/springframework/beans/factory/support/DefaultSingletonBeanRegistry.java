@@ -211,8 +211,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
+		// 对全局变量加锁
 		synchronized (this.singletonObjects) {
+			// 检测是否已经加载过beanName对应的bean，因为singleton模式是复用已经创建的bean
 			Object singletonObject = this.singletonObjects.get(beanName);
+			// bean未创建，可以进行初始化
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
 					throw new BeanCreationNotAllowedException(beanName,
@@ -222,6 +225,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+				// 创建以前将bean加入到正在创建的缓存map中
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
@@ -229,6 +233,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
+					// 从单例工厂中获取实例化bean
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
@@ -252,9 +257,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
+					// 将bean从正在创建的缓存map中去除，表明已经创建完成
 					afterSingletonCreation(beanName);
 				}
+				// 是新创建的bean
 				if (newSingleton) {
+					// 加入到缓存中
 					addSingleton(beanName, singletonObject);
 				}
 			}
